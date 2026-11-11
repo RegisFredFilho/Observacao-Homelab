@@ -1,0 +1,17 @@
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Credenciais
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Sistema e editor
+.DS_Store
+.vscode/
+*.log
