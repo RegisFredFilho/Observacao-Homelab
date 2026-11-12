@@ -3,9 +3,11 @@ name: Infra Observability CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -30,22 +32,24 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+          python -m pip show pytest
 
       - name: Run pytest
-        run: python -m pytest -v
+        run: |
+          python -m pytest -v
 
       - name: Validate dashboard JSON
+        shell: bash
         run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
+          found=0
+          for file in dashboards/*.json; do
+            if [ -f "$file" ]; then
+              python -m json.tool "$file" > /dev/null
+              echo "[OK] Valid JSON: $file"
+              found=1
+            fi
+          done
 
-          dashboards = list(Path("dashboards").glob("*.json"))
-          if not dashboards:
-    print("No dashboards committed yet; skipping validation.")
-
-          for dashboard in dashboards:
-              with dashboard.open(encoding="utf-8") as file:
-                  json.load(file)
-              print(f"Valid JSON: {dashboard}")
-          PY
+          if [ "$found" -eq 0 ]; then
+            echo "No dashboards committed yet; skipping validation."
+          fi
